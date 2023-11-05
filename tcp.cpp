@@ -1,5 +1,6 @@
 #include <iostream>
 #include <winsock2.h>
+#include "sharemem.h"
 
 int main()
 {
@@ -111,6 +112,9 @@ while (true)
                     message += buffer;
                     message += "\r\n";
                     send(clientSock, message.c_str(), message.length(), 0);
+                    // createSharedMemory(message);
+                    test();
+
                 }
                 else
                 {
