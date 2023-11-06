@@ -4,41 +4,39 @@
 #include <string>
 #include <Windows.h>
 #include <iostream>
-void createSharedMemory(std::string &message) 
+void createSharedMemory(const std::string &message) 
 {
-    HANDLE hMapFile;
-    LPCTSTR pBuf;
-
-    // Open the shared memory region
-    hMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, "MySharedMemory");
-
+    // Create a shared memory object
+    HANDLE hMapFile = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, message.size() + 1, "MySharedMemory");
     if (hMapFile == NULL)
     {
-        std::cerr << "Failed to open shared memory region: " << GetLastError() << std::endl;
+        std::cerr << "Failed to create shared memory object: " << GetLastError() << std::endl;
+        return;
     }
 
-    // Map the shared memory region into the current process
-    pBuf = (LPTSTR)MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, 1024);
-
-    if (pBuf == NULL)
+    // Map the shared memory object to the address space of the current process
+    LPVOID lpMapAddress = MapViewOfFile(hMapFile, FILE_MAP_ALL_ACCESS, 0, 0, message.size() + 1);
+    if (lpMapAddress == NULL)
     {
-        std::cerr << "Failed to map shared memory region: " << GetLastError() << std::endl;
+        std::cerr << "Failed to map shared memory object: " << GetLastError() << std::endl;
         CloseHandle(hMapFile);
+        return;
     }
 
-    // Read data from the shared memory region
-    strcpy((char*)pBuf, message.c_str());
+    // Write the message to the shared memory
+    memcpy(lpMapAddress, message.c_str(), message.size() + 1);
 
-    std::cout << "set \"" << (char*)pBuf << "\" to shared memory" << std::endl;
+    // Unmap the shared memory object from the address space of the current process
+    UnmapViewOfFile(lpMapAddress);
 
-    // Unmap the shared memory region from the current process
-    UnmapViewOfFile(pBuf);
-
-    // Close the shared memory handle
+    Sleep(10000);
+    // Close the shared memory object
     CloseHandle(hMapFile);
+
+    std::cout << "Message written to shared memory." << std::endl;
 
 }
 void test()
 {
-    std::cout << "test" << std::endl;
+    // std::cout << "test" << std::endl;
 }
