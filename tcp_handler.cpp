@@ -5,6 +5,8 @@
 
 bool TcpHandler()
 {
+    LPVOID lpMapAddress = NULL;
+    HANDLE hMapFile     = NULL;
     int port = 15001;
     // Initialize Winsock
     WSADATA wsaData;
@@ -97,9 +99,16 @@ bool TcpHandler()
                     closesocket(clientSock);
                     break;
                 }
+                if (result == 0)
+                {
+                    // Client has closed the connection
+                    std::cout << "Client has closed the connection." << std::endl;
+                    closesocket(clientSock);
+                    break;
+                }
                 bool isNegotiationMsg = (buffer[0] == (char)0xff && buffer[1] == (char)0xfb && buffer[2] == (char)0x1f && buffer[3] == (char)0xff && buffer[4] == (char)0xfb && buffer[5] == (char)0x20 && buffer[6] == (char)0xff && buffer[7] == (char)0xfb && buffer[8] == (char)0x18 && buffer[9] == (char)0xff && buffer[10] == (char)0xfb && buffer[11] == (char)0x27 && buffer[12] == (char)0xff && buffer[13] == (char)0xfd && buffer[14] == (char)0x01 && buffer[15] == (char)0xff && buffer[16] == (char)0xfb && buffer[17] == (char)0x03 && buffer[18] == (char)0xff && buffer[19] == (char)0xfd && buffer[20] == (char)0x03);
                 // Print the received data
-                if((buffer[0] != '\r')&&(buffer[0] != '\0') && !isNegotiationMsg)
+                if((buffer[0] != '\r')&&(buffer[0] != '\0') && !isNegotiationMsg )
                 {
                     if(strncmp(buffer, "pp", 2) == 0)
                     {
@@ -108,37 +117,36 @@ bool TcpHandler()
                         message += buffer;
                         message += "\r\n";
                         send(clientSock, message.c_str(), message.length(), 0);
-                        createSharedMemory(message);
+                        createSharedMemory(&lpMapAddress,&hMapFile);
+                        shareMessage(message, &lpMapAddress,&hMapFile);
+                        closeSharedMemory(&hMapFile);
                     }
                     else
                     {
-                        // std::cout << "Invalid message: "<< buffer << std::endl;;
-                        // std::cout << "Received invalid message: " << std::string(buffer, 10) << std::endl;
-                            std::cout << "Received message (hex): ";
-                        for (int i = 0; i < 20; i++)
+                        if (strcmp(buffer, "exit") == 0)
                         {
-                            std::cout << std::hex << std::setw(2) << std::setfill('0') << (int)(unsigned char)buffer[i] << " ";
+                            std::cout << "Received exit command, closing connection..." << std::endl;
+                            closesocket(clientSock);
+                            break;
                         }
-                        std::cout << std::endl;
+                        else
+                        {
+                            // std::cout << "Invalid message: "<< buffer << std::endl;;
+                            std::cout << "Received invalid message: " << std::string(buffer, 10) << std::endl;
+                        }
 
                     }
-                }
-
-                // std::cout << "Received message: " << buffer << std::endl;
-
-                // Check if the received message is "exit"
-                if (strcmp(buffer, "exit") == 0)
-                {
-                    std::cout << "Received exit command, closing connection..." << std::endl;
-                    closesocket(clientSock);
-                    break;
                 }
 
                 // Clear the buffer
                 memset(buffer, 0, sizeof(buffer));
                 // Wait for 20ms
-                Sleep(100);
+                Sleep(20);
             }
+        }
+        else
+        {
+            std::cout << "No incoming connections, waiting for incoming messages..." << std::endl;
         }
     }
 
