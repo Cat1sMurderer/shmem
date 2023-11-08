@@ -114,12 +114,14 @@ bool TcpHandler()
                     {
                         std::cout << "Received message: " << buffer << std::endl;
                         std::string message = "You sent: ";
+                        std::string sharedMsg = "";
                         message += buffer;
+                        sharedMsg += buffer;
                         message += "\r\n";
                         send(clientSock, message.c_str(), message.length(), 0);
                         createSharedMemory(&lpMapAddress,&hMapFile);
-                        shareMessage(message, &lpMapAddress,&hMapFile);
-                        closeSharedMemory(&hMapFile);
+                        shareMessage(sharedMsg, &lpMapAddress,&hMapFile);
+                        // closeSharedMemory(&hMapFile);
                     }
                     else
                     {

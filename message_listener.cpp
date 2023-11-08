@@ -4,19 +4,12 @@
 
 void msgListener()
 {
-    int counter = 0;
     std::string previousMessage = "";
     while(true)
     {
-        counter++;
-        if (counter == 10000)
-        {
-            break;
-        }
-        
         std::string message = "";
         readSharedMemory(message);
-        if(message != "" && message != previousMessage)
+        if((message != "") && (message != previousMessage))
         {
             std::cout << "Message received: " << message << std::endl; // avoding the same message
             previousMessage = message;

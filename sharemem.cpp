@@ -47,28 +47,31 @@ void shareMessage(const std::string message , PVOID* lpMapAddress,HANDLE* hMapFi
     char buffer[MAX_SIZE];
     // memset(buffer, 0, sizeof(buffer));
     // memcpy(buffer, lpMapAddress, sizeof(buffer));
-    memcpy(lpMapAddress, message.c_str(), message.size() + 1);
+    memcpy(*lpMapAddress, message.c_str(), message.size() + 1);
 
-    // Sleep for 10000 ms
     Sleep(100);
 
     // Unmap the shared memory object from the address space of the current process
-    UnmapViewOfFile(lpMapAddress);
+    UnmapViewOfFile(*lpMapAddress);
 
     // Print the message to the console
     std::cout << "shared message: " << message << std::endl;
-
-
-
     // Close the shared memory object
-    CloseHandle(*hMapFile);
+    if(*hMapFile != NULL)
+    {
+        CloseHandle(*hMapFile);
+        std::cout << "Close shared memory." << std::endl;
+    }
 }
 
 void closeSharedMemory(HANDLE* hMapFile)
 {
     // Close the shared memory object
-    CloseHandle(hMapFile);
-    std::cout << "Close shared memory." << std::endl;
+    if(*hMapFile != NULL)
+    {
+        // CloseHandle(*hMapFile);
+        std::cout << "Close shared memory." << std::endl;
+    }
 }
 void readSharedMemory(std::string &message)
 {
@@ -93,16 +96,12 @@ void readSharedMemory(std::string &message)
     char buffer[1024];
     memset(buffer, 0, sizeof(buffer));
     memcpy(buffer, lpMapAddress, sizeof(buffer));
-    message = buffer;
+    message.assign(buffer);
 
     // Unmap the shared memory object from the address space of the current process
     UnmapViewOfFile(lpMapAddress);
 
     // Print the message to the console
-    std::cout << "Received message: " << message << std::endl;
-
-    // Sleep for 1000 ms
-    // Sleep(1000);
 
     // Close the shared memory object
     CloseHandle(rhMapFile);

@@ -1,0 +1,81 @@
+<!--
+copyright:
+2023, Alstom SA (D&IS)
+We reserve all rights in this file and in the information
+contained therein. Reproduction, use or disclosure to third
+parties without express authority is strictly forbidden.
+
+Description:
+RCI configuration
+-->
+
+<root>
+    <RCI>
+        <common>
+            <event_device>
+                <device type="screen_read" name="CODESYS touch input device" />
+                <device type="screen_write" name="x11vnc injector" />
+            </event_device>
+            <dmi_pc_event_device name="D_CAB_A" scale="1">
+                <screen x = "130" y = "100" width = "480"  height = "800" />
+                <screen x = "790" y = "100" width = "480"  height = "800" />
+            </dmi_pc_event_device>        
+        </common>
+        <LSLF>
+            <id>5047</id>
+        </LSLF>
+        <HE>
+            <help name="PP">
+                <definition>Press point</definition>
+                <description>
+                    Simulate a “touch screen hit” event at position (x,y). Reply an error message if the given position is invalid. 
+                    The origin of the coordinate system is in the left, upper corner. The point most right below has the coordinates (639,479) 
+                    due to a screen resolution of 640 * 480 elements.
+                    The optional parameter &lt;z&gt; can be used to control the button activation mode:
+                    1:      The button is pressed statically -&gt; a button press event is created
+                    2:      The button is released -&gt; a button release event is created, if the button was pressed before
+                    else:   A button press-release event combination is created
+                </description>
+                <short_cmd>PP &lt;x&gt; &lt;y&gt; [&lt;z&gt;]</short_cmd>
+                <full_cmd>presspoint</full_cmd>
+                <reply>ok:&lt;command-line&gt;&lt;cr&gt;&lt;lf&gt;</reply>
+            </help>
+            <help name="LE">
+                <definition>Logging user activities</definition>
+                <description>
+                    Touchscreen and keyboard events are logged.  Touch screen event from command PP is also possible to log with LE command.
+                    Parameter &lt;x&gt; defines the activity to be logged:
+                    1:  Screen is touched
+                    2:  Screen is released
+                    3:  Touched point on screen is moved
+                    4:  Keyboard button (if attached) is pressed down
+                    5:  Keyboard button (if attached) is released
+                    0:  Deactivates any event logging (No parameter &lt;y&gt; is required)
+                    Parameter &lt;y&gt; defines the log-setting:
+                    1:  logging is enabled
+                    0, 2..  logging is disabled
+                    If any logging is enabled, an appropriate event is reported as described below:
+                    TD x y&lt;cr&gt;&lt;lf&gt;      Touchscreen pressed at position (x,y)
+                    TU x y&lt;cr&gt;&lt;lf&gt;      Touchscreen released at position (x,y)
+                    TM x y&lt;cr&gt;&lt;lf&gt;      Touchscreen pressed at position (x,y) during movements
+                    KD &lt;char&gt;&lt;cr&gt;&lt;lf&gt;   Key &lt;char&gt; pressed down on keyboard
+                    KU &lt;char&gt;&lt;cr&gt;&lt;lf&gt;   Key &lt;char&gt; released on keyboard
+                </description>
+                <short_cmd>LE &lt;x&gt; &lt;y&gt;</short_cmd>
+                <full_cmd>logevent</full_cmd>
+                <reply>ok:&lt;command-line&gt;&lt;cr&gt;&lt;lf&gt;</reply>
+            </help>
+            <help name="HE">
+                <definition>Help</definition>
+                <description>List all available RCI commands. Specify command name (short version) as a parameter to see more information.</description>
+                <short_cmd>HE, HE &lt;command&gt;</short_cmd>
+                <full_cmd>help</full_cmd>
+                <reply>ok:&lt;command-line&gt;&lt;cr&gt;&lt;lf&gt;</reply>
+            </help>
+        </HE>
+    </RCI>
+    <TCP>
+        <ETH1 cabin="1" ip="192.168.3.90" port="15001" />
+        <ETH1 cabin="2" ip="192.168.3.91" port="15001" />
+    </TCP>
+</root>
