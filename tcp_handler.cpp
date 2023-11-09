@@ -7,6 +7,7 @@ bool TcpHandler()
 {
     LPVOID lpMapAddress = NULL;
     HANDLE hMapFile     = NULL;
+    createSharedMemory(&lpMapAddress,&hMapFile,"TcpToRciSharedMemory");
     int port = 15001;
     // Initialize Winsock
     WSADATA wsaData;
@@ -85,7 +86,7 @@ bool TcpHandler()
             }
 
             std::cout << "Accepted incoming connection from " << inet_ntoa(clientAddr.sin_addr) << std::endl;
-
+        
             // Loop to continuously receive and process messages from the client
             while (true)
             {
@@ -108,7 +109,7 @@ bool TcpHandler()
                 }
                 bool isNegotiationMsg = (buffer[0] == (char)0xff && buffer[1] == (char)0xfb && buffer[2] == (char)0x1f && buffer[3] == (char)0xff && buffer[4] == (char)0xfb && buffer[5] == (char)0x20 && buffer[6] == (char)0xff && buffer[7] == (char)0xfb && buffer[8] == (char)0x18 && buffer[9] == (char)0xff && buffer[10] == (char)0xfb && buffer[11] == (char)0x27 && buffer[12] == (char)0xff && buffer[13] == (char)0xfd && buffer[14] == (char)0x01 && buffer[15] == (char)0xff && buffer[16] == (char)0xfb && buffer[17] == (char)0x03 && buffer[18] == (char)0xff && buffer[19] == (char)0xfd && buffer[20] == (char)0x03);
                 // Print the received data
-                if((buffer[0] != '\r')&&(buffer[0] != '\0') && !isNegotiationMsg )
+                if((buffer[0] != '\r')&&(buffer[0] != '\0') && !isNegotiationMsg ) //recieved the correct command
                 {
                     if(strncmp(buffer, "pp", 2) == 0)
                     {
@@ -119,7 +120,6 @@ bool TcpHandler()
                         sharedMsg += buffer;
                         message += "\r\n";
                         send(clientSock, message.c_str(), message.length(), 0);
-                        createSharedMemory(&lpMapAddress,&hMapFile);
                         shareMessage(sharedMsg, &lpMapAddress,&hMapFile);
                         // closeSharedMemory(&hMapFile);
                     }

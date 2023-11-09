@@ -16,4 +16,6 @@ int width2;
 int height2;
 
 void readXML();
-void touchWinScreen();
+void executePP(int posX,int posY);
+void msgListener();
+bool PPcommandValidation(std::string command) ;

@@ -6,15 +6,15 @@
 #include <iostream>
 
 #define MAX_SIZE 1024
-#define SHARED_MEM_NAME "MySharedMemory"
+#define SHARED_MEM_NAME "TcpToRciSharedMemory"
 #define INTERVAL_100 100
 #define INTERVAL_1000 1000
 #define INTERVAL_10000 10000
 
-void createSharedMemory(LPVOID* lpMapAddress , HANDLE* hMapFile) 
+void createSharedMemory(LPVOID* lpMapAddress , HANDLE* hMapFile ,std::string shrMemName) 
 {
     // Create a shared memory object
-    *hMapFile = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, MAX_SIZE + 1, SHARED_MEM_NAME);
+    *hMapFile = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, MAX_SIZE + 1, shrMemName.c_str());
     if (*hMapFile == NULL)
     {
         std::cerr << "Failed to create shared memory object: " << GetLastError() << std::endl;
@@ -45,23 +45,22 @@ void shareMessage(const std::string message , PVOID* lpMapAddress,HANDLE* hMapFi
 
     // Read the message from the shared memory
     char buffer[MAX_SIZE];
-    // memset(buffer, 0, sizeof(buffer));
-    // memcpy(buffer, lpMapAddress, sizeof(buffer));
+
     memcpy(*lpMapAddress, message.c_str(), message.size() + 1);
 
     Sleep(100);
 
     // Unmap the shared memory object from the address space of the current process
-    UnmapViewOfFile(*lpMapAddress);
+    // UnmapViewOfFile(*lpMapAddress);
 
     // Print the message to the console
     std::cout << "shared message: " << message << std::endl;
     // Close the shared memory object
-    if(*hMapFile != NULL)
-    {
-        CloseHandle(*hMapFile);
-        std::cout << "Close shared memory." << std::endl;
-    }
+    // if(*hMapFile != NULL)
+    // {
+    //     CloseHandle(*hMapFile);
+    //     std::cout << "Close shared memory." << std::endl;
+    // }
 }
 
 void closeSharedMemory(HANDLE* hMapFile)
@@ -73,10 +72,10 @@ void closeSharedMemory(HANDLE* hMapFile)
         std::cout << "Close shared memory." << std::endl;
     }
 }
-void readSharedMemory(std::string &message)
+void readSharedMemory(std::string &message ,std::string shrMemName)
 {
     // Open the shared memory object
-    HANDLE rhMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, SHARED_MEM_NAME);
+    HANDLE rhMapFile = OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, shrMemName.c_str());
     if (rhMapFile == NULL)
     {
         // std::cerr << "Failed to open shared memory object: " << GetLastError() << std::endl;
@@ -99,10 +98,10 @@ void readSharedMemory(std::string &message)
     message.assign(buffer);
 
     // Unmap the shared memory object from the address space of the current process
-    UnmapViewOfFile(lpMapAddress);
+    // UnmapViewOfFile(lpMapAddress);
 
     // Print the message to the console
 
     // Close the shared memory object
-    CloseHandle(rhMapFile);
+    // CloseHandle(rhMapFile);
 }
